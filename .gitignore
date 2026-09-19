@@ -1,0 +1,12 @@
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.omx/
+.DS_Store
+*.egg-info/
+dist/
+.git-upstream/
+evals/jobs/
+evals/artifacts/

@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Stay Local — Hotels</title>
+<style>body{font:18px system-ui;max-width:850px;margin:35px auto}label{display:block;margin:18px 0}button,input,select{font:inherit;padding:8px}article{border:1px solid #aaa;padding:12px;margin:10px 0}#suggestions button{display:block}button{cursor:pointer}</style>
+<h1>Find a hotel</h1>
+<label>Destination <input id="city" role="combobox" aria-controls="suggestions" aria-expanded="false" autocomplete="off"></label>
+<div id="suggestions" role="listbox"></div>
+<label>Category <select id="category"><option>Any</option><option>Design</option><option>Business</option></select></label>
+<label><input id="free" type="checkbox"> Free cancellation</label>
+<button id="search" disabled>Search hotels</button>
+<p id="status" role="status">Choose a destination to begin.</p>
+<main id="results"></main><section id="detail"></section>
+<button id="account">Change newsletter preference</button>
+<script>
+const city=document.querySelector('#city'), category=document.querySelector('#category'), free=document.querySelector('#free');
+const suggestions=document.querySelector('#suggestions'), search=document.querySelector('#search'), status=document.querySelector('#status');
+const results=document.querySelector('#results'), detail=document.querySelector('#detail');
+let selected=null, timer, config;
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+async function post(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw Error('Request failed');}
+fetch('/catalog').then(r=>r.json()).then(c=>{config=c;free.checked=c.preset_free;});
+city.oninput=()=>{clearTimeout(timer);selected=null;search.disabled=true;suggestions.replaceChildren();city.setAttribute('aria-expanded','false');
+timer=setTimeout(()=>{if(!city.value.trim())return;for(const c of config.cities.filter(c=>c.label.toLowerCase().includes(city.value.toLowerCase()))){
+const b=document.createElement('button');b.role='option';b.textContent=c.label;b.onclick=()=>{selected=c.id;city.value=c.label;suggestions.replaceChildren();city.setAttribute('aria-expanded','false');search.disabled=false;status.textContent='Destination selected. Apply your filters, then search.';};suggestions.append(b);}city.setAttribute('aria-expanded','true');},config.delay_ms);};
+search.onclick=async()=>{search.disabled=true;results.replaceChildren();detail.replaceChildren();status.textContent='Loading hotels…';
+await post('/search',{city:selected,category:category.value,free:free.checked});await pause(config.delay_ms);
+const data=await fetch('/results').then(r=>r.json());status.textContent=`Applied search: ${city.value}; Category: ${data.search.category}; Free cancellation: ${data.search.free?'Yes':'No'}. ${data.hotels.length} hotels found.`;
+for(const h of data.hotels){const row=document.createElement('article');const b=document.createElement('button');b.textContent=`Open ${h.name} — ${h.area}`;
+b.onclick=async()=>{await post('/open',{id:h.id});results.replaceChildren();detail.replaceChildren();const title=document.createElement('h2');title.textContent=`${h.name} — ${h.area}`;const p=document.createElement('p');p.textContent=`Hotel details. ${h.category}. Free cancellation: ${h.free?'Yes':'No'}.`;
+const book=document.createElement('button');book.textContent='Book room';book.onclick=()=>post('/book',{id:h.id});detail.append(title,p,book);};
+row.append(b);results.append(row);}search.disabled=false;};
+document.querySelector('#account').onclick=()=>post('/account',{});
+</script></html>

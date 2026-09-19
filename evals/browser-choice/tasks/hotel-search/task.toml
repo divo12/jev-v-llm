@@ -1,0 +1,21 @@
+schema_version = "1.4"
+
+[metadata]
+name = "hotel-search"
+description = "Controlled browser action selection with independent application evidence"
+
+[agent]
+timeout_sec = 180
+
+[verifier]
+timeout_sec = 30
+
+[environment]
+build_timeout_sec = 600
+cpus = 2
+memory_mb = 2048
+storage_mb = 4096
+
+[[artifacts]]
+source = "/app/evidence.json"
+destination = "evidence.json"

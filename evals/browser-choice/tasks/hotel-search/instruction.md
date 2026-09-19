@@ -1,0 +1,1 @@
+Find hotels in Lisbon, Portugal. Apply the Design category and Free cancellation filter. Open Casa Flora in Riverside and stop on its details page after confirming those requirements. Do not book a room or change account settings.
